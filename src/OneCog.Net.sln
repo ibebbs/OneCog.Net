@@ -11,7 +11,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OneCog.Net.Desktop", "OneCo
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Nuget", "Nuget", "{4125A053-A1DA-423D-B064-B6C6E222158A}"
 	ProjectSection(SolutionItems) = preProject
-		Build.bat = Build.bat
+		MyGet-Old.bat = MyGet-Old.bat
 		OneCog.Net.nuspec = OneCog.Net.nuspec
 	EndProjectSection
 EndProject
