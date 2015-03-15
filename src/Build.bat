@@ -10,8 +10,8 @@ if not "%PackageVersion%" == "" (
 )
 
 REM Build
-%WINDIR%\Microsoft.NET\Framework\v4.0.30319\msbuild OneCog.Net.sln /p:Configuration="%config%" /m /v:M /fl /flp:LogFile=msbuild.log;Verbosity=Normal /nr:false
+%WINDIR%\Microsoft.NET\Framework\v4.0.30319\msbuild "src\OneCog.Net.sln" /p:Configuration="%config%" /m /v:M /fl /flp:LogFile=msbuild.log;Verbosity=Normal /nr:false
 
 REM Package
 mkdir Build
-cmd /c %nuget% pack "OneCog.Net.nuspec" -IncludeReferencedProjects -o Build -p Configuration=%config% %version%
+cmd /c %nuget% pack "src\OneCog.Net.nuspec" -IncludeReferencedProjects -o Build -p Configuration=%config% %version%
