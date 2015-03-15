@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+VisualStudioVersion = 12.0.30501.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OneCog.Net", "OneCog.Net\OneCog.Net.csproj", "{00FEBF8B-4F10-4408-9268-2C448CFFAAEE}"
 EndProject
@@ -11,6 +11,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OneCog.Net.Desktop", "OneCo
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Nuget", "Nuget", "{4125A053-A1DA-423D-B064-B6C6E222158A}"
 	ProjectSection(SolutionItems) = preProject
+		Build.bat = Build.bat
 		OneCog.Net.nuspec = OneCog.Net.nuspec
 	EndProjectSection
 EndProject
