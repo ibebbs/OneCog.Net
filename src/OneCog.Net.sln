@@ -9,6 +9,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OneCog.Net.Universal", "One
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OneCog.Net.Desktop", "OneCog.Net.Desktop\OneCog.Net.Desktop.csproj", "{E63834CA-C343-42B0-A330-0A75F6BBC806}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Nuget", "Nuget", "{4125A053-A1DA-423D-B064-B6C6E222158A}"
+	ProjectSection(SolutionItems) = preProject
+		OneCog.Net.nuspec = OneCog.Net.nuspec
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
