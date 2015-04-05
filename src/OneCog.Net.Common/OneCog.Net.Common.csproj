@@ -8,7 +8,7 @@
     <ProjectGuid>{00FEBF8B-4F10-4408-9268-2C448CFFAAEE}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>OneCog.Net.Common</RootNamespace>
+    <RootNamespace>OneCog.Net</RootNamespace>
     <AssemblyName>OneCog.Net.Common</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <FileAlignment>512</FileAlignment>
@@ -37,6 +37,8 @@
     <!-- A reference to the entire .NET Framework is automatically included -->
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IDataReader.cs" />
+    <Compile Include="IDataWriter.cs" />
     <Compile Include="ITcpClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

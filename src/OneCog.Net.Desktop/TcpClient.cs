@@ -5,49 +5,54 @@ using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
-using CoreTcpClient = System.Net.Sockets.TcpClient;
 
 namespace OneCog.Net
 {
     public class TcpClient : ITcpClient
     {
-        private CoreTcpClient _tcpClient;
-        private NetworkStream _networkStream;
+        private readonly Dictionary<Uri, Connection> _connections;
 
-        public async Task Connect(string host, uint port)
+        public TcpClient()
         {
-            _tcpClient = new CoreTcpClient();
-            await _tcpClient.ConnectAsync(host, (int)port);
-            _networkStream = _tcpClient.GetStream();
-        }
-
-        public Task Read(byte[] bytes)
-        {
-            if (bytes == null) throw new ArgumentNullException("bytes");
-
-            return _networkStream.ReadAsync(bytes, 0, bytes.Length);
-        }
-
-        public Task Write(byte[] bytes)
-        {
-            if (bytes == null) throw new ArgumentNullException("bytes");
-
-            return _networkStream.WriteAsync(bytes, 0, bytes.Length);
+            _connections = new Dictionary<Uri, Connection>();
         }
 
         public void Dispose()
         {
-            if (_networkStream != null)
+            IEnumerable<Connection> connections = _connections.Values.ToArray();
+
+            foreach (Connection connection in connections)
             {
-                _networkStream.Dispose();
-                _networkStream = null;
+                connection.Dispose();
+            }
+        }
+
+        public Task<IDataReader> GetDataReader(string host, uint port)
+        {
+            Uri uri = new UriBuilder("tcp", host, (int)port).Uri;
+            Connection connection;
+
+            if (!_connections.TryGetValue(uri, out connection))
+            {
+                connection = new Connection(uri);
+                _connections.Add(uri, connection);
             }
 
-            if (_tcpClient != null)
+            return connection.GetDataReader();
+        }
+
+        public Task<IDataWriter> GetDataWriter(string host, uint port)
+        {
+            Uri uri = new UriBuilder("tcp", host, (int)port).Uri;
+            Connection connection;
+
+            if (!_connections.TryGetValue(uri, out connection))
             {
-                _tcpClient.Close();
-                _tcpClient = null;
+                connection = new Connection(uri);
+                _connections.Add(uri, connection);
             }
+
+            return connection.GetDataWriter();
         }
     }
 }

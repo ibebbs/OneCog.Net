@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>OneCog.Net</id>
-    <version>1.0.0.1</version>
+    <version>$version$</version>
     <title>OneCog.Net</title>
     <authors>OneCog</authors>
     <owners>OneCog</owners>
@@ -12,7 +12,7 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Simple, cross platform, networking library</description>
     <copyright>Copyright 2015</copyright>
-    <tags>Portable TcpClient</tags>
+    <tags>portable tcp TcpClient</tags>
   </metadata>
   <files>
     <!-- Win8 + Wpa81 -->
