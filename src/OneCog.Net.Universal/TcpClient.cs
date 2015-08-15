@@ -11,6 +11,7 @@ namespace OneCog.Net
 {
     public class TcpClient : ITcpClient
     {
+        private readonly object _syncRoot = new object();
         private readonly Dictionary<Uri, Connection> _connections;
 
         public TcpClient()
@@ -33,13 +34,16 @@ namespace OneCog.Net
             Uri uri = new UriBuilder("tcp", host, (int)port).Uri;
             Connection connection;
 
-            if (!_connections.TryGetValue(uri, out connection))
+            lock (_syncRoot)
             {
-                connection = new Connection(uri);
-                _connections.Add(uri, connection);
-            }
+                if (!_connections.TryGetValue(uri, out connection))
+                {
+                    connection = new Connection(uri);
+                    _connections.Add(uri, connection);
+                }
 
-            return connection.GetDataReader();
+                return connection.GetDataReader();
+            }
         }
 
         public Task<IDataWriter> GetDataWriter(string host, uint port)
@@ -47,13 +51,16 @@ namespace OneCog.Net
             Uri uri = new UriBuilder("tcp", host, (int)port).Uri;
             Connection connection;
 
-            if (!_connections.TryGetValue(uri, out connection))
+            lock (_syncRoot)
             {
-                connection = new Connection(uri);
-                _connections.Add(uri, connection);
-            }
+                if (!_connections.TryGetValue(uri, out connection))
+                {
+                    connection = new Connection(uri);
+                    _connections.Add(uri, connection);
+                }
 
-            return connection.GetDataWriter();
+                return connection.GetDataWriter();
+            }
         }
     }
 }
