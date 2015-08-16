@@ -14,39 +14,5 @@
     <copyright>Copyright 2015</copyright>
     <tags>portable tcp TcpClient</tags>
   </metadata>
-  <files>
-    <!-- Win8 + Wpa81 -->
-    <file src="OneCog.Net.Universal\bin\$configuration$\OneCog.Net.dll" target="lib\portable-win81+wpa81\OneCog.Net.dll" />
-    <file src="OneCog.Net.Universal\bin\$configuration$\OneCog.Net.pdb" target="lib\portable-win81+wpa81\OneCog.Net.pdb" />
-    <file src="OneCog.Net.Universal\bin\$configuration$\OneCog.Net.Common.dll" target="lib\portable-win81+wpa81\OneCog.Net.Common.dll" />
-    <file src="OneCog.Net.Universal\bin\$configuration$\OneCog.Net.Common.pdb" target="lib\portable-win81+wpa81\OneCog.Net.Common.pdb" />
-    <!--file src="OneCog.Net.Universal\bin\$configuration$\OneCog.Net.Implementation.pri" target="lib\portable-win81+wpa81\OneCog.Net.Implementation.pri" /-->
-
-    <!-- WP8 -->
-    <file src="OneCog.Net.Universal\bin\$configuration$\OneCog.Net.dll" target="lib\wp8\OneCog.Net.dll" />
-    <file src="OneCog.Net.Universal\bin\$configuration$\OneCog.Net.pdb" target="lib\wp8\OneCog.Net.pdb" />
-    <file src="OneCog.Net.Universal\bin\$configuration$\OneCog.Net.Common.dll" target="lib\wp8\OneCog.Net.Common.dll" />
-    <file src="OneCog.Net.Universal\bin\$configuration$\OneCog.Net.Common.pdb" target="lib\wp8\OneCog.Net.Common.pdb" />
-
-    <!-- Net45 -->
-    <file src="OneCog.Net.Desktop\bin\$configuration$\OneCog.Net.dll" target="lib\net45\OneCog.Net.dll" />
-    <file src="OneCog.Net.Desktop\bin\$configuration$\OneCog.Net.pdb" target="lib\net45\OneCog.Net.pdb" />
-    <file src="OneCog.Net.Desktop\bin\$configuration$\OneCog.Net.Common.dll" target="lib\net45\OneCog.Net.Common.dll" />
-    <file src="OneCog.Net.Desktop\bin\$configuration$\OneCog.Net.Common.pdb" target="lib\net45\OneCog.Net.Common.pdb" />
-
-    <!-- Sl5 -->
-    <file src="OneCog.Net.Universal\bin\$configuration$\OneCog.Net.dll" target="lib\sl5\OneCog.Net.dll" />
-    <file src="OneCog.Net.Universal\bin\$configuration$\OneCog.Net.pdb" target="lib\sl5\OneCog.Net.pdb" />
-    <file src="OneCog.Net.Universal\bin\$configuration$\OneCog.Net.Common.dll" target="lib\sl5\OneCog.Net.Common.dll" />
-    <file src="OneCog.Net.Universal\bin\$configuration$\OneCog.Net.Common.pdb" target="lib\sl5\OneCog.Net.Common.pdb" />
-
-    <!-- PCL -->
-    <file src="OneCog.Net.Universal\bin\$configuration$\OneCog.Net.dll" target="lib\portable-net45+wp8+win81+wpa81\OneCog.Net.dll" />
-    <file src="OneCog.Net.Universal\bin\$configuration$\OneCog.Net.pdb" target="lib\portable-net45+wp8+win81+wpa81\OneCog.Net.pdb" />
-    <file src="OneCog.Net.Universal\bin\$configuration$\OneCog.Net.Common.dll" target="lib\portable-net45+wp8+win81+wpa81\OneCog.Net.Common.dll" />
-    <file src="OneCog.Net.Universal\bin\$configuration$\OneCog.Net.Common.pdb" target="lib\portable-net45+wp8+win81+wpa81\OneCog.Net.Common.pdb" />
-
-    <!-- Source -->
-    <file src="**\*.cs" target="src" exclude="..\_ReSharper.*\**\*.*;..\packages\**\*.*;..\**\Debug\**\*.*"/>
-  </files>
+  @files@
 </package>
