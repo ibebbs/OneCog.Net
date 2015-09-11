@@ -24,12 +24,14 @@ let configuration = "Release"
 let binPath = "bin"
 
 let libDir = "lib"
+let srcDir = "src"
 let win8Target = "portable-win81+wpa81"
 let wp8Target = "wp8"
 let net45Target = "net45"
 let sl5Target = "sl5"
 let pclTarget = "portable-net45+wp8+win81+wpa81"
 let uapTarget = "uap10.0"
+let srcTarget = "src"
  
 // Targets
 Target "Clean" (fun _ ->
@@ -44,6 +46,7 @@ Target "Build" (fun _ ->
 
 Target "Package" (fun _ ->
 
+    CopyWithSubfoldersTo deployDir [ !! "./src/**/*.cs" ]
     allAssemblies |> List.map(fun a -> sourcePath @@ portablePath @@ binPath @@ configuration @@ a) |> Copy (deployDir @@ portablePath)
     allAssemblies |> List.map(fun a -> sourcePath @@ desktopPath @@ binPath @@ configuration @@ a) |> Copy (deployDir @@ desktopPath)
 
@@ -53,6 +56,7 @@ Target "Package" (fun _ ->
     let sl5Files = allAssemblies |> List.map(fun a -> (portablePath @@ a, Some(Path.Combine(libDir, sl5Target)), None))
     let pclFiles = allAssemblies |> List.map(fun a -> (portablePath @@ a, Some(Path.Combine(libDir, pclTarget)), None))
     let uapFiles = allAssemblies |> List.map(fun a -> (portablePath @@ a, Some(Path.Combine(libDir, uapTarget)), None))
+    let srcFiles = [ (@"src\**\*.*", Some "src", None) ]
 
     NuGet (fun p -> 
         {p with
@@ -64,8 +68,9 @@ Target "Package" (fun _ ->
             Tags = tags
             OutputPath = deployDir
             WorkingDir = deployDir
+            SymbolPackage = NugetSymbolPackage.Nuspec
             Version = version
-            Files = win8Files @ wp8Files @ net45AssemblyFiles @ sl5Files @ pclFiles @ uapFiles
+            Files = win8Files @ wp8Files @ net45AssemblyFiles @ sl5Files @ pclFiles @ uapFiles @ srcFiles
             Publish = false }) 
             "./src/OneCog.Net.nuspec"
 )
