@@ -45,8 +45,15 @@ namespace OneCog.Net
 
         public async Task Write(byte[] bytes)
         {
-            _writer.WriteBytes(bytes);
-            await _writer.StoreAsync().AsTask(_cancellationTokenSource.Token);
+            try
+            {
+                _writer.WriteBytes(bytes);
+                await _writer.StoreAsync().AsTask(_cancellationTokenSource.Token);
+            }
+            catch (TaskCanceledException)
+            {
+                // Disposing so do nothing
+            }
         }
     }
 }

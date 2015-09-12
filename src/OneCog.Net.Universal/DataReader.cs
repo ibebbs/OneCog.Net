@@ -46,13 +46,14 @@ namespace OneCog.Net
 
         public async Task Read(byte[] bytes)
         {
-            Task<uint> load = _reader.LoadAsync((uint)bytes.Length).AsTask(_cancellationTokenSource.Token);
-
-            await load;
-
-            if (load.Status == TaskStatus.RanToCompletion)
+            try
             {
+                uint loaded = await _reader.LoadAsync((uint)bytes.Length).AsTask(_cancellationTokenSource.Token);
                 _reader.ReadBytes(bytes);
+            }
+            catch (TaskCanceledException)
+            {
+                // Disposing so do nothing
             }
         }
     }
