@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using CoreWriter = Windows.Storage.Streams.DataWriter;
 
@@ -10,6 +11,8 @@ namespace OneCog.Net
     internal class DataWriter : IDataWriter
     {
         private readonly Connection _connection;
+
+        private CancellationTokenSource _cancellationTokenSource;
         private CoreWriter _writer;
 
         public DataWriter(Connection connection)
@@ -17,11 +20,20 @@ namespace OneCog.Net
             _connection = connection;
             _connection.AddWriter(this);
 
+            _cancellationTokenSource = new CancellationTokenSource();
+
             _writer = new CoreWriter(_connection.StreamSocket.OutputStream);
         }
 
         public void Dispose()
         {
+            if (_cancellationTokenSource != null)
+            {
+                _cancellationTokenSource.Cancel();
+                _cancellationTokenSource.Dispose();
+                _cancellationTokenSource = null;
+            }
+
             if (_writer != null)
             {
                 _writer.Dispose();
@@ -34,7 +46,7 @@ namespace OneCog.Net
         public async Task Write(byte[] bytes)
         {
             _writer.WriteBytes(bytes);
-            await _writer.StoreAsync();
+            await _writer.StoreAsync().AsTask(_cancellationTokenSource.Token);
         }
     }
 }
