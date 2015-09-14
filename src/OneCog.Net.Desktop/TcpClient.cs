@@ -1,58 +1,71 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net.Sockets;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using CoreTcpClient = System.Net.Sockets.TcpClient;
 
 namespace OneCog.Net
 {
-    public class TcpClient : ITcpClient
+    public class TcpClient
     {
-        private readonly Dictionary<Uri, Connection> _connections;
-
-        public TcpClient()
+        private Connection _connection;
+        
+        public async Task<IDisposable> Connect(Uri uri, CancellationToken cancellationToken)
         {
-            _connections = new Dictionary<Uri, Connection>();
-        }
+            if (_connection != null) throw new InvalidOperationException("Socket is already connected");
 
-        public void Dispose()
-        {
-            IEnumerable<Connection> connections = _connections.Values.ToArray();
+            Instrumentation.Connection.Log.ConnectingTo(uri.ToString());
 
-            foreach (Connection connection in connections)
+            CoreTcpClient socket = new CoreTcpClient();
+
+            Instrumentation.Connection.Log.OpeningConnection(uri.ToString());
+
+            try
             {
-                connection.Dispose();
+                await socket.ConnectAsync(uri.Host, uri.Port);
+
+                Instrumentation.Connection.Log.ConnectionOpened(uri.ToString());
+
+                _connection = new Connection(socket, () => _connection = null);
+
+                return _connection;
+            }
+            catch (Exception e)
+            {
+                Instrumentation.Connection.Log.ConnectionFailed(uri.ToString(), e.ToString());
+
+                throw;
             }
         }
 
-        public Task<IDataReader> GetDataReader(string host, uint port)
+        public Task<IDisposable> Connect(Uri uri)
+        {
+            return Connect(uri, CancellationToken.None);
+        }
+
+        public Task<IDisposable> Connect(string host, uint port, CancellationToken cancellationToken)
         {
             Uri uri = new UriBuilder("tcp", host, (int)port).Uri;
-            Connection connection;
-
-            if (!_connections.TryGetValue(uri, out connection))
-            {
-                connection = new Connection(uri);
-                _connections.Add(uri, connection);
-            }
-
-            return connection.GetDataReader();
+            return Connect(uri, cancellationToken);
         }
 
-        public Task<IDataWriter> GetDataWriter(string host, uint port)
+        public Task<IDisposable> Connect(string host, uint port)
         {
             Uri uri = new UriBuilder("tcp", host, (int)port).Uri;
-            Connection connection;
+            return Connect(uri, CancellationToken.None);
+        }
 
-            if (!_connections.TryGetValue(uri, out connection))
-            {
-                connection = new Connection(uri);
-                _connections.Add(uri, connection);
-            }
+        public Task<int> Read(byte[] bytes, CancellationToken cancellationToken)
+        {
+            if (_connection == null) throw new InvalidOperationException("No connection. Call Connect first");
 
-            return connection.GetDataWriter();
+            return _connection.Read(bytes, cancellationToken);
+        }
+
+        public Task Write(byte[] bytes, CancellationToken cancellationToken)
+        {
+            if (_connection == null) throw new InvalidOperationException("No connection. Call Connect first");
+
+            return _connection.Write(bytes, cancellationToken);
         }
     }
 }

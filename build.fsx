@@ -9,7 +9,7 @@ RestorePackages()
 let deployDir = "./deploy/"
  
 // version info
-let version = environVarOrDefault "PackageVersion" "1.0.0.0"  // or retrieve from CI server
+let version = environVarOrDefault "PackageVersion" "2.0.0.0"  // or retrieve from CI server
 let summary = "Open source portable .NET library providing sockets functionality to a variety of platforms."
 let copyright = "Ian Bebbington, 2014"
 let tags = "tcp udp WinRT UAP socket portable"

@@ -1,62 +1,77 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using Windows.Networking;
+using Windows.Networking.Sockets;
+using CoreReader = Windows.Storage.Streams.DataReader;
+using CoreWriter = Windows.Storage.Streams.DataWriter;
 
 namespace OneCog.Net
 {
-    public class TcpClient : ITcpClient
+    public class TcpClient
     {
-        private readonly object _syncRoot = new object();
-        private readonly Dictionary<Uri, Connection> _connections;
-
-        public TcpClient()
+        private Connection _connection;
+        
+        public async Task<IDisposable> Connect(Uri uri, CancellationToken cancellationToken)
         {
-            _connections = new Dictionary<Uri, Connection>();
-        }
+            if (_connection != null) throw new InvalidOperationException("Socket is already connected");
 
-        public void Dispose()
-        {
-            IEnumerable<Connection> connections = _connections.Values.ToArray();
+            Instrumentation.Connection.Log.ConnectingTo(uri.ToString());
 
-            foreach (Connection connection in connections)
+            StreamSocket socket = new StreamSocket();
+
+            Instrumentation.Connection.Log.OpeningConnection(uri.ToString());
+
+            try
             {
-                connection.Dispose();
+                await socket.ConnectAsync(new HostName(uri.Host), uri.Port.ToString()).AsTask(cancellationToken);
+
+                Instrumentation.Connection.Log.ConnectionOpened(uri.ToString());
+
+                CoreReader dataReader = new CoreReader(socket.InputStream);
+                CoreWriter dataWriter = new CoreWriter(socket.OutputStream);
+
+                _connection = new Connection(socket, dataReader, dataWriter, () => _connection = null);
+
+                return _connection;
+            }
+            catch (Exception e)
+            {
+                Instrumentation.Connection.Log.ConnectionFailed(uri.ToString(), e.ToString());
+
+                throw;
             }
         }
 
-        public Task<IDataReader> GetDataReader(string host, uint port)
+        public Task<IDisposable> Connect(Uri uri)
+        {
+            return Connect(uri, CancellationToken.None);
+        }
+
+        public Task<IDisposable> Connect(string host, uint port, CancellationToken cancellationToken)
         {
             Uri uri = new UriBuilder("tcp", host, (int)port).Uri;
-            Connection connection;
-
-            lock (_syncRoot)
-            {
-                if (!_connections.TryGetValue(uri, out connection))
-                {
-                    connection = new Connection(uri);
-                    _connections.Add(uri, connection);
-                }
-
-                return connection.GetDataReader();
-            }
+            return Connect(uri, cancellationToken);
         }
 
-        public Task<IDataWriter> GetDataWriter(string host, uint port)
+        public Task<IDisposable> Connect(string host, uint port)
         {
             Uri uri = new UriBuilder("tcp", host, (int)port).Uri;
-            Connection connection;
+            return Connect(uri, CancellationToken.None);
+        }
 
-            lock (_syncRoot)
-            {
-                if (!_connections.TryGetValue(uri, out connection))
-                {
-                    connection = new Connection(uri);
-                    _connections.Add(uri, connection);
-                }
+        public Task<int> Read(byte[] bytes, CancellationToken cancellationToken)
+        {
+            if (_connection == null) throw new InvalidOperationException("No connection. Call Connect first");
 
-                return connection.GetDataWriter();
-            }
+            return _connection.Read(bytes, cancellationToken);
+        }
+
+        public Task Write(byte[] bytes, CancellationToken cancellationToken)
+        {
+            if (_connection == null) throw new InvalidOperationException("No connection. Call Connect first");
+
+            return _connection.Write(bytes, cancellationToken);
         }
     }
 }

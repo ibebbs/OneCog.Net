@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Sockets;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using CoreTcpClient = System.Net.Sockets.TcpClient;
 
@@ -10,93 +8,58 @@ namespace OneCog.Net
 {
     internal class Connection : IDisposable
     {
-        private CoreTcpClient _tcpClient;
-        private readonly List<IDisposable> _consumers;
+        private CoreTcpClient _socket;
+        private NetworkStream _stream;
+        private Action _disposed;
 
-        public Connection(Uri uri)
+        public Connection(CoreTcpClient socket, Action disposed)
         {
-            _tcpClient = new CoreTcpClient();
-            _consumers = new List<IDisposable>();
+            _socket = socket;
+            _stream = socket.GetStream();
 
-            Uri = uri;
+            _disposed = disposed;
         }
 
         public void Dispose()
         {
-            IEnumerable<IDisposable> consumers = _consumers.ToArray();
-
-            foreach (IDisposable consumer in consumers)
+            if (_socket != null)
             {
-                consumer.Dispose();
+                _socket.Close();
+                _socket = null;
+            }
+
+            if (_disposed != null)
+            {
+                _disposed();
+                _disposed = null;
             }
         }
 
-        private async Task Connect()
+        public async Task<int> Read(byte[] bytes, CancellationToken cancellationToken)
         {
-            if (NetworkStream == null)
+            try
             {
-                await _tcpClient.ConnectAsync(Uri.Host, Uri.Port);
-                NetworkStream = _tcpClient.GetStream();
+                int loaded = await _stream.ReadAsync(bytes, 0, bytes.Length, cancellationToken);
+
+                return loaded;
+            }
+            catch (TaskCanceledException)
+            {
+                // Disposing so do nothing
+                return -1;
             }
         }
 
-        private void Disconnect()
+        public async Task Write(byte[] bytes, CancellationToken cancellationToken)
         {
-            if (NetworkStream != null)
+            try
             {
-                NetworkStream.Dispose();
-                NetworkStream = null;
-
-                _tcpClient.Close();
+                await _stream.WriteAsync(bytes, 0, bytes.Length, cancellationToken);
+            }
+            catch (TaskCanceledException)
+            {
+                // Disposing so do nothing
             }
         }
-
-        public void AddReader(DataReader dataReader)
-        {
-            _consumers.Add(dataReader);
-        }
-
-        public void RemoveReader(DataReader dataReader)
-        {
-            _consumers.Remove(dataReader);
-
-            if (_consumers.Count == 0)
-            {
-                Disconnect();
-            }
-        }
-
-        public void AddWriter(DataWriter dataWriter)
-        {
-            _consumers.Add(dataWriter);
-        }
-
-        public void RemoveWriter(DataWriter dataWriter)
-        {
-            _consumers.Remove(dataWriter);
-
-            if (_consumers.Count == 0)
-            {
-                Disconnect();
-            }
-        }
-
-        public async Task<IDataReader> GetDataReader()
-        {
-            await Connect();
-
-            return new DataReader(this);
-        }
-
-        public async Task<IDataWriter> GetDataWriter()
-        {
-            await Connect();
-
-            return new DataWriter(this);
-        }
-
-        public Uri Uri { get; private set; }
-
-        public NetworkStream NetworkStream { get; private set; }
     }
 }

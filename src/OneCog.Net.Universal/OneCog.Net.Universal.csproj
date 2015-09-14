@@ -34,11 +34,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="AsyncLock.cs" />
-    <Compile Include="AsyncSemaphore.cs" />
     <Compile Include="Connection.cs" />
-    <Compile Include="DataReader.cs" />
-    <Compile Include="DataWriter.cs" />
     <Compile Include="TcpClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

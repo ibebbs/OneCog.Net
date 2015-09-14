@@ -1,165 +1,81 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Windows.Networking;
 using Windows.Networking.Sockets;
+using CoreReader = Windows.Storage.Streams.DataReader;
+using CoreWriter = Windows.Storage.Streams.DataWriter;
 
 namespace OneCog.Net
 {
     internal class Connection : IDisposable
     {
-        private readonly List<IDisposable> _consumers;
-        private readonly AsyncLock _lock;
+        private StreamSocket _streamSocket;
+        private CoreReader _dataReader;
+        private CoreWriter _dataWriter;
+        private Action _disposed;
 
-        public Connection(Uri uri)
+        public Connection(StreamSocket streamSocket, CoreReader dataReader, CoreWriter dataWriter, Action disposed)
         {
-            _consumers = new List<IDisposable>();
-            _lock = new AsyncLock();
-
-            Uri = uri;
+            _streamSocket = streamSocket;
+            _dataReader = dataReader;
+            _dataWriter = dataWriter;
+            _disposed = disposed;
         }
 
         public void Dispose()
         {
-            IEnumerable<IDisposable> consumers = _consumers.ToArray();
-
-            foreach (IDisposable consumer in consumers)
+            if (_dataReader != null)
             {
-                consumer.Dispose();
+                _dataReader.Dispose();
+                _dataReader = null;
+            }
+
+            if (_dataWriter != null)
+            {
+                _dataWriter.Dispose();
+                _dataWriter = null;
+            }
+
+            if (_streamSocket != null)
+            {
+                _streamSocket.Dispose();
+                _streamSocket = null;
+            }
+
+            if (_disposed != null)
+            {
+                _disposed();
+                _disposed = null;
             }
         }
 
-        private async Task Connect()
+        public async Task<int> Read(byte[] bytes, CancellationToken cancellationToken)
         {
-            Instrumentation.Connection.Log.ConnectingTo(Uri.ToString());
-
-            if (StreamSocket == null)
+            try
             {
-                StreamSocket = new StreamSocket();
+                uint loaded = await _dataReader.LoadAsync((uint)bytes.Length).AsTask(cancellationToken);
+                _dataReader.ReadBytes(bytes);
 
-                Instrumentation.Connection.Log.OpeningConnection(Uri.ToString());
-
-                try
-                {
-                    await StreamSocket.ConnectAsync(new HostName(Uri.Host), Uri.Port.ToString());
-
-                    Instrumentation.Connection.Log.ConnectionOpened(Uri.ToString());
-                }
-                catch (Exception e)
-                {
-                    Instrumentation.Connection.Log.ConnectionFailed(Uri.ToString(), e.ToString());
-
-                    throw;
-                }
+                return (int)loaded;
             }
-            else
+            catch (TaskCanceledException)
             {
-                Instrumentation.Connection.Log.AbortConnection(Uri.ToString());
+                // Disposing so do nothing
+                return -1;
             }
         }
 
-        private void Disconnect()
+        public async Task Write(byte[] bytes, CancellationToken cancellationToken)
         {
-            Instrumentation.Connection.Log.DisconnectingFrom(Uri.ToString());
-
-            if (StreamSocket != null)
+            try
             {
-                Instrumentation.Connection.Log.DisposingConnection(Uri.ToString());
-                StreamSocket.Dispose();
-                StreamSocket = null;
-                Instrumentation.Connection.Log.ConnectionDisposed(Uri.ToString());
+                _dataWriter.WriteBytes(bytes);
+                await _dataWriter.StoreAsync().AsTask(cancellationToken);
             }
-            else
+            catch (TaskCanceledException)
             {
-                Instrumentation.Connection.Log.AbortDisconnection(Uri.ToString());
+                // Disposing so do nothing
             }
         }
-
-        public void AddReader(DataReader dataReader)
-        {
-            _consumers.Add(dataReader);
-        }
-
-        public void RemoveReader(DataReader dataReader)
-        {
-            _consumers.Remove(dataReader);
-
-            if (_consumers.Count == 0)
-            {
-                Disconnect();
-            }
-        }
-
-        public void AddWriter(DataWriter dataWriter)
-        {
-            _consumers.Add(dataWriter);
-        }
-
-        public void RemoveWriter(DataWriter dataWriter)
-        {
-            _consumers.Remove(dataWriter);
-
-            if (_consumers.Count == 0)
-            {
-                Disconnect();
-            }
-        }
-
-        public async Task<IDataReader> GetDataReader()
-        {
-            Instrumentation.Connection.Log.StartGetDataReader(Uri.ToString());
-
-            using (var l = await _lock.LockAsync())
-            {
-                try
-                {
-                    await Connect();
-
-                    return new DataReader(this);
-                }
-                catch (Exception exception)
-                {
-                    Instrumentation.Connection.Log.ErrorGettingDataReader(Uri.ToString(), exception.ToString());
-
-                    throw;
-                }
-                finally
-                {
-                    Instrumentation.Connection.Log.StopGetDataReader(Uri.ToString());
-                }
-            }
-        }
-
-        public async Task<IDataWriter> GetDataWriter()
-        {
-            Instrumentation.Connection.Log.StartGetDataWriter(Uri.ToString());
-
-            using (var l = await _lock.LockAsync())
-            {
-                try
-                {
-                    await Connect();
-
-                    return new DataWriter(this);
-                }
-                catch (Exception exception)
-                {
-                    Instrumentation.Connection.Log.ErrorGettingDataWriter(Uri.ToString(), exception.ToString());
-
-                    throw;
-                }
-                finally
-                {
-                    Instrumentation.Connection.Log.StopGetDataWriter(Uri.ToString());
-                }
-            }
-        }
-
-        public Uri Uri { get; private set; }
-
-        public StreamSocket StreamSocket { get; private set; }
     }
 }

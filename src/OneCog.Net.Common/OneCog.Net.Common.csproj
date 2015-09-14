@@ -38,8 +38,8 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="IDataReader.cs" />
-    <Compile Include="IDataWriter.cs" />
+    <Compile Include="AsyncLock.cs" />
+    <Compile Include="AsyncSemaphore.cs" />
     <Compile Include="ITcpClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -61,53 +61,5 @@ namespace OneCog.Net.Instrumentation
         {
             WriteEvent(9, uri);
         }
-
-        [Event(10, Message = "Start GetDataReader for {0}", Level = EventLevel.Informational, Opcode = EventOpcode.Start)]
-        public void StartGetDataReader(string uri)
-        {
-            WriteEvent(10, uri);
-        }
-
-        [Event(11, Message = "Error getting data reader for {0}", Level = EventLevel.Error)]
-        public void ErrorGettingDataReader(string uri, string exception)
-        {
-            WriteEvent(11, uri, exception);
-        }
-
-        [Event(12, Message = "Stop GetDataReader for {0}", Level = EventLevel.Informational, Opcode = EventOpcode.Stop)]
-        public void StopGetDataReader(string uri)
-        {
-            WriteEvent(12, uri);
-        }
-
-        [Event(13, Message = "Start GetDataWriter for {0}", Level = EventLevel.Informational, Opcode = EventOpcode.Start)]
-        public void StartGetDataWriter(string uri)
-        {
-            WriteEvent(13, uri);
-        }
-
-        [Event(14, Message = "Error getting data writer for {0}", Level = EventLevel.Error)]
-        public void ErrorGettingDataWriter(string uri, string exception)
-        {
-            WriteEvent(14, uri, exception);
-        }
-
-        [Event(15, Message = "Stop GetDataWriter for {0}", Level = EventLevel.Informational, Opcode = EventOpcode.Stop)]
-        public void StopGetDataWriter(string uri)
-        {
-            WriteEvent(15, uri);
-        }
-
-        [Event(16, Message = "Waiting for mutex before getting data reader", Level = EventLevel.Informational)]
-        public void GetDataReaderWaitingForMutex()
-        {
-            WriteEvent(16);
-        }
-
-        [Event(17, Message = "Waiting for mutex before getting data writer", Level = EventLevel.Informational)]
-        public void GetDataWriterWaitingForMutex()
-        {
-            WriteEvent(17);
-        }
     }
 }
