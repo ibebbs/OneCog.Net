@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Windows.Networking;
 using Windows.Networking.Sockets;
@@ -11,10 +12,12 @@ namespace OneCog.Net
     internal class Connection : IDisposable
     {
         private readonly List<IDisposable> _consumers;
+        private readonly AsyncLock _lock;
 
         public Connection(Uri uri)
         {
             _consumers = new List<IDisposable>();
+            _lock = new AsyncLock();
 
             Uri = uri;
         }
@@ -109,21 +112,24 @@ namespace OneCog.Net
         {
             Instrumentation.Connection.Log.StartGetDataReader(Uri.ToString());
 
-            try
+            using (var l = await _lock.LockAsync())
             {
-                await Connect();
+                try
+                {
+                    await Connect();
 
-                return new DataReader(this);
-            }
-            catch (Exception exception)
-            {
-                Instrumentation.Connection.Log.ErrorGettingDataReader(Uri.ToString(), exception.ToString());
+                    return new DataReader(this);
+                }
+                catch (Exception exception)
+                {
+                    Instrumentation.Connection.Log.ErrorGettingDataReader(Uri.ToString(), exception.ToString());
 
-                throw;
-            }
-            finally
-            {
-                Instrumentation.Connection.Log.StopGetDataReader(Uri.ToString());
+                    throw;
+                }
+                finally
+                {
+                    Instrumentation.Connection.Log.StopGetDataReader(Uri.ToString());
+                }
             }
         }
 
@@ -131,21 +137,24 @@ namespace OneCog.Net
         {
             Instrumentation.Connection.Log.StartGetDataWriter(Uri.ToString());
 
-            try
+            using (var l = await _lock.LockAsync())
             {
-                await Connect();
+                try
+                {
+                    await Connect();
 
-                return new DataWriter(this);
-            }
-            catch (Exception exception)
-            {
-                Instrumentation.Connection.Log.ErrorGettingDataWriter(Uri.ToString(), exception.ToString());
+                    return new DataWriter(this);
+                }
+                catch (Exception exception)
+                {
+                    Instrumentation.Connection.Log.ErrorGettingDataWriter(Uri.ToString(), exception.ToString());
 
-                throw;
-            }
-            finally
-            {
-                Instrumentation.Connection.Log.StopGetDataWriter(Uri.ToString());
+                    throw;
+                }
+                finally
+                {
+                    Instrumentation.Connection.Log.StopGetDataWriter(Uri.ToString());
+                }
             }
         }
 

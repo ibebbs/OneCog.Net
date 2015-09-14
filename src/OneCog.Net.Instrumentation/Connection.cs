@@ -97,5 +97,17 @@ namespace OneCog.Net.Instrumentation
         {
             WriteEvent(15, uri);
         }
+
+        [Event(16, Message = "Waiting for mutex before getting data reader", Level = EventLevel.Informational)]
+        public void GetDataReaderWaitingForMutex()
+        {
+            WriteEvent(16);
+        }
+
+        [Event(17, Message = "Waiting for mutex before getting data writer", Level = EventLevel.Informational)]
+        public void GetDataWriterWaitingForMutex()
+        {
+            WriteEvent(17);
+        }
     }
 }
