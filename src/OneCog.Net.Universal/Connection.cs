@@ -107,16 +107,46 @@ namespace OneCog.Net
 
         public async Task<IDataReader> GetDataReader()
         {
-            await Connect();
+            Instrumentation.Connection.Log.StartGetDataReader(Uri.ToString());
 
-            return new DataReader(this);
+            try
+            {
+                await Connect();
+
+                return new DataReader(this);
+            }
+            catch (Exception exception)
+            {
+                Instrumentation.Connection.Log.ErrorGettingDataReader(Uri.ToString(), exception.ToString());
+
+                throw;
+            }
+            finally
+            {
+                Instrumentation.Connection.Log.StopGetDataReader(Uri.ToString());
+            }
         }
 
         public async Task<IDataWriter> GetDataWriter()
         {
-            await Connect();
+            Instrumentation.Connection.Log.StartGetDataWriter(Uri.ToString());
 
-            return new DataWriter(this);
+            try
+            {
+                await Connect();
+
+                return new DataWriter(this);
+            }
+            catch (Exception exception)
+            {
+                Instrumentation.Connection.Log.ErrorGettingDataWriter(Uri.ToString(), exception.ToString());
+
+                throw;
+            }
+            finally
+            {
+                Instrumentation.Connection.Log.StopGetDataWriter(Uri.ToString());
+            }
         }
 
         public Uri Uri { get; private set; }
