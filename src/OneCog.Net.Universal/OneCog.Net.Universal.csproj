@@ -34,14 +34,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <TargetPlatform Include="WindowsPhoneApp, Version=8.1" />
-    <TargetPlatform Include="Windows, Version=8.1" />
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="Connection.cs" />
     <Compile Include="DataReader.cs" />
     <Compile Include="DataWriter.cs" />
-    <Compile Include="Instrumentation.cs" />
     <Compile Include="TcpClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -50,9 +45,17 @@
       <Project>{00febf8b-4f10-4408-9268-2c448cffaaee}</Project>
       <Name>OneCog.Net.Common</Name>
     </ProjectReference>
+    <ProjectReference Include="..\OneCog.Net.Instrumentation\OneCog.Net.Instrumentation.csproj">
+      <Project>{407c76d5-a4e6-4955-926d-4146c5e72704}</Project>
+      <Name>OneCog.Net.Instrumentation</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <TargetPlatform Include="Windows, Version=8.1" />
+    <TargetPlatform Include="WindowsPhoneApp, Version=8.1" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

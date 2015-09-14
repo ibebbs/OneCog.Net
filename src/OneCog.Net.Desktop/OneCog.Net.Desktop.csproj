@@ -51,6 +51,10 @@
       <Project>{00febf8b-4f10-4408-9268-2c448cffaaee}</Project>
       <Name>OneCog.Net.Common</Name>
     </ProjectReference>
+    <ProjectReference Include="..\OneCog.Net.Instrumentation\OneCog.Net.Instrumentation.csproj">
+      <Project>{407c76d5-a4e6-4955-926d-4146c5e72704}</Project>
+      <Name>OneCog.Net.Instrumentation</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

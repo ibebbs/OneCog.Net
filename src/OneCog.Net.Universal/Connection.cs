@@ -31,39 +31,47 @@ namespace OneCog.Net
 
         private async Task Connect()
         {
-            Instrumentation.Log.ConnectingTo(Uri);
+            Instrumentation.Connection.Log.ConnectingTo(Uri.ToString());
 
             if (StreamSocket == null)
             {
                 StreamSocket = new StreamSocket();
 
-                Instrumentation.Log.OpeningConnection(Uri);
+                Instrumentation.Connection.Log.OpeningConnection(Uri.ToString());
 
                 try
                 {
                     await StreamSocket.ConnectAsync(new HostName(Uri.Host), Uri.Port.ToString());
 
-                    Instrumentation.Log.ConnectionOpened(Uri);
+                    Instrumentation.Connection.Log.ConnectionOpened(Uri.ToString());
                 }
                 catch (Exception e)
                 {
-                    Instrumentation.Log.ConnectionFailed(Uri, e);
+                    Instrumentation.Connection.Log.ConnectionFailed(Uri.ToString(), e.ToString());
 
                     throw;
                 }
             }
             else
             {
-                Instrumentation.Log.AbortConnection(Uri);
+                Instrumentation.Connection.Log.AbortConnection(Uri.ToString());
             }
         }
 
         private void Disconnect()
         {
+            Instrumentation.Connection.Log.DisconnectingFrom(Uri.ToString());
+
             if (StreamSocket != null)
             {
+                Instrumentation.Connection.Log.DisposingConnection(Uri.ToString());
                 StreamSocket.Dispose();
                 StreamSocket = null;
+                Instrumentation.Connection.Log.ConnectionDisposed(Uri.ToString());
+            }
+            else
+            {
+                Instrumentation.Connection.Log.AbortDisconnection(Uri.ToString());
             }
         }
 

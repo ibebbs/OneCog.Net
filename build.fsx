@@ -15,7 +15,7 @@ let copyright = "Ian Bebbington, 2014"
 let tags = "tcp udp WinRT UAP socket portable"
 let description = "Open source portable .NET library providing sockets functionality to a variety of platforms."
 
-let allAssemblies = [ "OneCog.Net.Common.dll"; "OneCog.Net.Common.pdb"; "OneCog.Net.dll"; "OneCog.Net.pdb" ]
+let allAssemblies = [ "OneCog.Net.Common.dll"; "OneCog.Net.Common.pdb"; "OneCog.Net.Instrumentation.dll"; "OneCog.Net.Instrumentation.pdb"; "OneCog.Net.dll"; "OneCog.Net.pdb" ]
 let sourcePath = "src"
 let commonPath  = "OneCog.Net.Common"
 let portablePath = "OneCog.Net.Universal"
@@ -44,6 +44,15 @@ Target "Build" (fun _ ->
      |> Log "AppBuild-Output: "
 )
 
+Target "Test" (fun _ ->
+    !! ("./src/**/*.Test/"  @@ binPath @@ configuration @@ "*.Test.dll")
+    ++ ("./src/**/*.Tests/"  @@ binPath @@ configuration @@ "*.Tests.dll")
+      |> NUnit (fun p ->
+          {p with
+             DisableShadowCopy = true;
+             OutputFile = deployDir @@ "TestResults.xml" })
+)
+
 Target "Package" (fun _ ->
 
     CopyWithSubfoldersTo deployDir [ !! "./src/**/*.cs" ]
@@ -52,7 +61,7 @@ Target "Package" (fun _ ->
 
     let win8Files = allAssemblies |> List.map(fun a -> (portablePath @@ a, Some(Path.Combine(libDir, win8Target)), None))
     let wp8Files = allAssemblies  |> List.map(fun a -> (portablePath @@ a, Some(Path.Combine(libDir, wp8Target)), None))
-    let net45AssemblyFiles = allAssemblies |> List.map(fun a -> (desktopPath @@ a, Some(Path.Combine(libDir, net45Target)), None))
+    let net45Files = allAssemblies |> List.map(fun a -> (desktopPath @@ a, Some(Path.Combine(libDir, net45Target)), None))
     let sl5Files = allAssemblies |> List.map(fun a -> (portablePath @@ a, Some(Path.Combine(libDir, sl5Target)), None))
     let pclFiles = allAssemblies |> List.map(fun a -> (portablePath @@ a, Some(Path.Combine(libDir, pclTarget)), None))
     let uapFiles = allAssemblies |> List.map(fun a -> (portablePath @@ a, Some(Path.Combine(libDir, uapTarget)), None))
@@ -70,7 +79,7 @@ Target "Package" (fun _ ->
             WorkingDir = deployDir
             SymbolPackage = NugetSymbolPackage.Nuspec
             Version = version
-            Files = win8Files @ wp8Files @ net45AssemblyFiles @ sl5Files @ pclFiles @ uapFiles @ srcFiles
+            Files = win8Files @ wp8Files @ net45Files @ sl5Files @ pclFiles @ uapFiles @ srcFiles
             Publish = false }) 
             "./src/OneCog.Net.nuspec"
 )
@@ -82,6 +91,7 @@ Target "Run" (fun _ ->
 // Dependencies
 "Clean"
   ==> "Build"
+  ==> "Test"
   ==> "Package"
   ==> "Run"
  
