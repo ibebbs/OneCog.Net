@@ -5,7 +5,7 @@ using CoreTcpClient = System.Net.Sockets.TcpClient;
 
 namespace OneCog.Net
 {
-    public class TcpClient
+    public class TcpClient : ITcpClient
     {
         private Connection _connection;
         

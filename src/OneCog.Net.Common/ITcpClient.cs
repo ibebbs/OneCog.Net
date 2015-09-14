@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace OneCog.Net
 {
-    public interface ITcpClient : IDisposable
+    public interface ITcpClient
     {
         Task<IDisposable> Connect(Uri uri);
 
