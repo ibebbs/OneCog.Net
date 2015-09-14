@@ -31,10 +31,30 @@ namespace OneCog.Net
 
         private async Task Connect()
         {
+            Instrumentation.Log.ConnectingTo(Uri);
+
             if (StreamSocket == null)
             {
                 StreamSocket = new StreamSocket();
-                await StreamSocket.ConnectAsync(new HostName(Uri.Host), Uri.Port.ToString());
+
+                Instrumentation.Log.OpeningConnection(Uri);
+
+                try
+                {
+                    await StreamSocket.ConnectAsync(new HostName(Uri.Host), Uri.Port.ToString());
+
+                    Instrumentation.Log.ConnectionOpened(Uri);
+                }
+                catch (Exception e)
+                {
+                    Instrumentation.Log.ConnectionFailed(Uri, e);
+
+                    throw;
+                }
+            }
+            else
+            {
+                Instrumentation.Log.AbortConnection(Uri);
             }
         }
 
