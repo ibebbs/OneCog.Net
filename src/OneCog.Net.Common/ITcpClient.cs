@@ -4,18 +4,18 @@ using System.Threading.Tasks;
 
 namespace OneCog.Net
 {
-    public interface ITcpClient
+    public interface ITcpClient : IDisposable
     {
-        Task<IDisposable> Connect(Uri uri);
+        Task ConnectAsync(Uri uri);
 
-        Task<IDisposable> Connect(string host, uint port);
+        Task ConnectAsync(string host, uint port);
 
-        Task<IDisposable> Connect(Uri uri, CancellationToken cancellationToken);
+        Task ConnectAsync(Uri uri, CancellationToken cancellationToken);
 
-        Task<IDisposable> Connect(string host, uint port, CancellationToken cancellationToken);
+        Task ConnectAsync(string host, uint port, CancellationToken cancellationToken);
 
-        Task<int> Read(byte[] bytes, CancellationToken cancellationToken);
+        Task<int> ReadAsync(byte[] bytes, CancellationToken cancellationToken);
 
-        Task Write(byte[] bytes, CancellationToken cancellationToken);
+        Task WriteAsync(byte[] bytes, CancellationToken cancellationToken);
     }
 }

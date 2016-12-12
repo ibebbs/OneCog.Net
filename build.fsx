@@ -9,7 +9,7 @@ RestorePackages()
 let deployDir = "./deploy/"
  
 // version info
-let version = environVarOrDefault "PackageVersion" "2.0.0.0"  // or retrieve from CI server
+let version = environVarOrDefault "PackageVersion" "3.0.0.0"  // or retrieve from CI server
 let summary = "Open source portable .NET library providing sockets functionality to a variety of platforms."
 let copyright = "Ian Bebbington, 2014"
 let tags = "tcp udp WinRT UAP socket portable"
@@ -18,7 +18,7 @@ let description = "Open source portable .NET library providing sockets functiona
 let allAssemblies = [ "OneCog.Net.Common.dll"; "OneCog.Net.Common.pdb"; "OneCog.Net.Instrumentation.dll"; "OneCog.Net.Instrumentation.pdb"; "OneCog.Net.dll"; "OneCog.Net.pdb" ]
 let sourcePath = "src"
 let commonPath  = "OneCog.Net.Common"
-let portablePath = "OneCog.Net.Universal"
+let universalPath = "OneCog.Net.Uwp"
 let desktopPath = "OneCog.Net.Desktop"
 let configuration = "Release"
 let binPath = "bin"
@@ -31,6 +31,7 @@ let net45Target = "net45"
 let sl5Target = "sl5"
 let pclTarget = "portable-net45+wp8+win81+wpa81"
 let uapTarget = "uap10.0"
+let netStandardTarget = "netstandard1.4"
 let srcTarget = "src"
  
 // Targets
@@ -56,15 +57,16 @@ Target "Test" (fun _ ->
 Target "Package" (fun _ ->
 
     CopyWithSubfoldersTo deployDir [ !! "./src/**/*.cs" ]
-    allAssemblies |> List.map(fun a -> sourcePath @@ portablePath @@ binPath @@ configuration @@ a) |> Copy (deployDir @@ portablePath)
+    allAssemblies |> List.map(fun a -> sourcePath @@ universalPath @@ binPath @@ configuration @@ a) |> Copy (deployDir @@ universalPath)
     allAssemblies |> List.map(fun a -> sourcePath @@ desktopPath @@ binPath @@ configuration @@ a) |> Copy (deployDir @@ desktopPath)
 
-    let win8Files = allAssemblies |> List.map(fun a -> (portablePath @@ a, Some(Path.Combine(libDir, win8Target)), None))
-    let wp8Files = allAssemblies  |> List.map(fun a -> (portablePath @@ a, Some(Path.Combine(libDir, wp8Target)), None))
+    let win8Files = allAssemblies |> List.map(fun a -> (universalPath @@ a, Some(Path.Combine(libDir, win8Target)), None))
+    let wp8Files = allAssemblies  |> List.map(fun a -> (universalPath @@ a, Some(Path.Combine(libDir, wp8Target)), None))
     let net45Files = allAssemblies |> List.map(fun a -> (desktopPath @@ a, Some(Path.Combine(libDir, net45Target)), None))
-    let sl5Files = allAssemblies |> List.map(fun a -> (portablePath @@ a, Some(Path.Combine(libDir, sl5Target)), None))
-    let pclFiles = allAssemblies |> List.map(fun a -> (portablePath @@ a, Some(Path.Combine(libDir, pclTarget)), None))
-    let uapFiles = allAssemblies |> List.map(fun a -> (portablePath @@ a, Some(Path.Combine(libDir, uapTarget)), None))
+    let sl5Files = allAssemblies |> List.map(fun a -> (universalPath @@ a, Some(Path.Combine(libDir, sl5Target)), None))
+    let pclFiles = allAssemblies |> List.map(fun a -> (universalPath @@ a, Some(Path.Combine(libDir, pclTarget)), None))
+    let uapFiles = allAssemblies |> List.map(fun a -> (universalPath @@ a, Some(Path.Combine(libDir, uapTarget)), None))
+    let netStandardFiles = allAssemblies |> List.map(fun a -> (universalPath @@ a, Some(Path.Combine(libDir, netStandardTarget)), None))
     let srcFiles = [ (@"src\**\*.*", Some "src", None) ]
 
     NuGet (fun p -> 
@@ -79,7 +81,7 @@ Target "Package" (fun _ ->
             WorkingDir = deployDir
             SymbolPackage = NugetSymbolPackage.Nuspec
             Version = version
-            Files = win8Files @ wp8Files @ net45Files @ sl5Files @ pclFiles @ uapFiles @ srcFiles
+            Files = win8Files @ wp8Files @ net45Files @ sl5Files @ pclFiles @ uapFiles @ netStandardFiles @ srcFiles
             Publish = false }) 
             "./src/OneCog.Net.nuspec"
 )

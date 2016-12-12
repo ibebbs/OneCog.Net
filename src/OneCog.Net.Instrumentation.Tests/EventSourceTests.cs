@@ -11,7 +11,7 @@ namespace OneCog.Net.Instrumentation.Tests
         {
             EventSourceAnalyzer analyzer = new EventSourceAnalyzer();
 
-            analyzer.Inspect(Connection.Log);
+            analyzer.Inspect(Tcp.Log);
         }
     }
 }

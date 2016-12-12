@@ -2,20 +2,18 @@
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
-using CoreTcpClient = System.Net.Sockets.TcpClient;
+using CoreUdpClient = System.Net.Sockets.UdpClient;
 
 namespace OneCog.Net
 {
-    internal class Connection : IDisposable
+    internal class UdpConnection : IDisposable
     {
-        private CoreTcpClient _socket;
-        private NetworkStream _stream;
+        private CoreUdpClient _socket;
         private Action _disposed;
 
-        public Connection(CoreTcpClient socket, Action disposed)
+        public UdpConnection(CoreUdpClient socket, Action disposed)
         {
             _socket = socket;
-            _stream = socket.GetStream();
 
             _disposed = disposed;
         }
@@ -39,9 +37,15 @@ namespace OneCog.Net
         {
             try
             {
-                int loaded = await _stream.ReadAsync(bytes, 0, bytes.Length, cancellationToken);
+                UdpReceiveResult result = await _socket.ReceiveAsync();
 
-                return loaded;
+                // TODO: We may lose bytes here if the buffer isn't big enough to hold the entireity
+                // of the received message. This should be resolved with an internal buffer.
+                int bytesToCopy = Math.Min(result.Buffer.Length, bytes.Length);
+
+                Array.Copy(result.Buffer, bytes, bytesToCopy);
+
+                return bytesToCopy;
             }
             catch (TaskCanceledException)
             {
@@ -54,7 +58,7 @@ namespace OneCog.Net
         {
             try
             {
-                await _stream.WriteAsync(bytes, 0, bytes.Length, cancellationToken);
+                await _socket.SendAsync(bytes, bytes.Length);
             }
             catch (TaskCanceledException)
             {

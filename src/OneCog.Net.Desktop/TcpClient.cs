@@ -7,61 +7,68 @@ namespace OneCog.Net
 {
     public class TcpClient : ITcpClient
     {
-        private Connection _connection;
+        private TcpConnection _connection;
+
+        public void Dispose()
+        {
+            if (_connection != null)
+            {
+                _connection.Dispose();
+                _connection = null;
+            }
+        }
         
-        public async Task<IDisposable> Connect(Uri uri, CancellationToken cancellationToken)
+        public async Task ConnectAsync(Uri uri, CancellationToken cancellationToken)
         {
             if (_connection != null) throw new InvalidOperationException("Socket is already connected");
 
-            Instrumentation.Connection.Log.ConnectingTo(uri.ToString());
+            Instrumentation.Tcp.Log.ConnectingTo(uri.ToString());
 
             CoreTcpClient socket = new CoreTcpClient();
 
-            Instrumentation.Connection.Log.OpeningConnection(uri.ToString());
+            Instrumentation.Tcp.Log.OpeningConnection(uri.ToString());
 
             try
             {
                 await socket.ConnectAsync(uri.Host, uri.Port);
 
-                Instrumentation.Connection.Log.ConnectionOpened(uri.ToString());
+                Instrumentation.Tcp.Log.ConnectionOpened(uri.ToString());
 
-                _connection = new Connection(socket, () => _connection = null);
-
-                return _connection;
+                _connection = new TcpConnection(socket, () => _connection = null);
             }
             catch (Exception e)
             {
-                Instrumentation.Connection.Log.ConnectionFailed(uri.ToString(), e.ToString());
+                Instrumentation.Tcp.Log.ConnectionFailed(uri.ToString(), e.ToString());
 
                 throw;
             }
         }
 
-        public Task<IDisposable> Connect(Uri uri)
+        public Task ConnectAsync(Uri uri)
         {
-            return Connect(uri, CancellationToken.None);
+            return ConnectAsync(uri, CancellationToken.None);
         }
 
-        public Task<IDisposable> Connect(string host, uint port, CancellationToken cancellationToken)
-        {
-            Uri uri = new UriBuilder("tcp", host, (int)port).Uri;
-            return Connect(uri, cancellationToken);
-        }
-
-        public Task<IDisposable> Connect(string host, uint port)
+        public Task ConnectAsync(string host, uint port, CancellationToken cancellationToken)
         {
             Uri uri = new UriBuilder("tcp", host, (int)port).Uri;
-            return Connect(uri, CancellationToken.None);
+            return ConnectAsync(uri, cancellationToken);
         }
 
-        public Task<int> Read(byte[] bytes, CancellationToken cancellationToken)
+        public Task ConnectAsync(string host, uint port)
+        {
+            Uri uri = new UriBuilder("tcp", host, (int)port).Uri;
+            return ConnectAsync(uri, CancellationToken.None);
+        }
+
+        public Task<int> ReadAsync(byte[] bytes, CancellationToken cancellationToken)
         {
             if (_connection == null) throw new InvalidOperationException("No connection. Call Connect first");
 
             return _connection.Read(bytes, cancellationToken);
         }
 
-        public Task Write(byte[] bytes, CancellationToken cancellationToken)
+        public Task WriteAsync(byte[] bytes, CancellationToken cancellationToken)
         {
             if (_connection == null) throw new InvalidOperationException("No connection. Call Connect first");
 

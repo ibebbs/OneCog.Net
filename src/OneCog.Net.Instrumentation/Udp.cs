@@ -3,10 +3,10 @@ using System.Diagnostics.Tracing;
 
 namespace OneCog.Net.Instrumentation
 {
-    [EventSource(Name = "OneCog-Net-Connection")]
-    public sealed class Connection : EventSource
+    [EventSource(Name = "OneCog-Net-Udp")]
+    public sealed class Udp : EventSource
     {
-        public static readonly Connection Log = new Connection();
+        public static readonly Udp Log = new Udp();
 
         [Event(1, Message = "Connecting to {0}", Level = EventLevel.Informational)]
         public void ConnectingTo(string uri)

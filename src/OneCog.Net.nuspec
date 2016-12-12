@@ -12,7 +12,7 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Simple, cross platform, networking library</description>
     <copyright>Copyright 2015</copyright>
-    <tags>portable tcp TcpClient</tags>
+    <tags>portable tcp udp TcpClient UdpClient</tags>
   </metadata>
   @files@
 </package>
