@@ -2,14 +2,12 @@
 
 open Fake
 open System.IO;
-
-RestorePackages()
  
 // Properties
 let deployDir = "./deploy/"
  
 // version info
-let version = environVarOrDefault "PackageVersion" "3.0.0.0"  // or retrieve from CI server
+let version = environVarOrDefault "PackageVersion" "3.0.0.2"  // or retrieve from CI server
 let summary = "Open source portable .NET library providing sockets functionality to a variety of platforms."
 let copyright = "Ian Bebbington, 2014"
 let tags = "tcp udp WinRT UAP socket portable"
@@ -23,6 +21,7 @@ let desktopPath = "OneCog.Net.Desktop"
 let configuration = "Release"
 let binPath = "bin"
 
+let buildDir  = @".\build\"
 let libDir = "lib"
 let srcDir = "src"
 let win8Target = "portable-win81+wpa81"
@@ -31,7 +30,7 @@ let net45Target = "net45"
 let sl5Target = "sl5"
 let pclTarget = "portable-net45+wp8+win81+wpa81"
 let uapTarget = "uap10.0"
-let netStandardTarget = "netstandard1.4"
+let netStandardTarget = "netstandard1.1"
 let srcTarget = "src"
  
 // Targets
@@ -41,7 +40,11 @@ Target "Clean" (fun _ ->
  
 Target "Build" (fun _ ->
    !! "./src/**/*.csproj"
-     |> MSBuildRelease "" "Build"
+     |> MSBuild null "Build" 
+          [ 
+            "Configuration", "Release"
+            "Platform", "AnyCPU"
+         ]
      |> Log "AppBuild-Output: "
 )
 
@@ -93,7 +96,6 @@ Target "Run" (fun _ ->
 // Dependencies
 "Clean"
   ==> "Build"
-  ==> "Test"
   ==> "Package"
   ==> "Run"
  
