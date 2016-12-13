@@ -7,7 +7,7 @@ open System.IO;
 let deployDir = "./deploy/"
  
 // version info
-let version = environVarOrDefault "PackageVersion" "3.0.0.3"  // or retrieve from CI server
+let version = environVarOrDefault "PackageVersion" "3.0.0.4"  // or retrieve from CI server
 let summary = "Open source portable .NET library providing sockets functionality to a variety of platforms."
 let copyright = "Ian Bebbington, 2014"
 let tags = "tcp udp WinRT UAP socket portable"
