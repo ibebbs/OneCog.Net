@@ -21,21 +21,50 @@ namespace OneCog.Net
             }
         }
 
-        public async Task ConnectAsync(Uri uri, CancellationToken cancellationToken)
+        public async Task ConnectAsync(Uri localUri, Uri remoteUri, CancellationToken cancellationToken)
         {
             if (_connection != null) throw new InvalidOperationException("Socket is already connected");
 
-            Instrumentation.Tcp.Log.ConnectingTo(uri.ToString());
+            Instrumentation.Udp.Log.ConnectingTo(remoteUri.ToString());
 
             DatagramSocket socket = new DatagramSocket();
 
-            Instrumentation.Udp.Log.OpeningConnection(uri.ToString());
+            Instrumentation.Udp.Log.OpeningConnection(remoteUri.ToString());
 
             try
             {
-                await socket.ConnectAsync(new HostName(uri.Host), uri.Port.ToString()).AsTask(cancellationToken);
+                await socket.ConnectAsync(new EndpointPair(new HostName(localUri.Host), localUri.Port.ToString(), new HostName(remoteUri.Host), remoteUri.Port.ToString())).AsTask(cancellationToken);
 
-                Instrumentation.Tcp.Log.ConnectionOpened(uri.ToString());
+                Instrumentation.Udp.Log.ConnectionOpened(remoteUri.ToString());
+
+                CoreReader dataReader = new CoreReader(new DatagramSocketInputStream(socket));
+                CoreWriter dataWriter = new CoreWriter(socket.OutputStream);
+
+                _connection = new Connection(socket, dataReader, dataWriter, () => _connection = null);
+            }
+            catch (Exception e)
+            {
+                Instrumentation.Udp.Log.ConnectionFailed(remoteUri.ToString(), e.ToString());
+
+                throw;
+            }
+        }
+
+        public async Task ConnectAsync(Uri remoteUri, CancellationToken cancellationToken)
+        {
+            if (_connection != null) throw new InvalidOperationException("Socket is already connected");
+
+            Instrumentation.Udp.Log.ConnectingTo(remoteUri.ToString());
+
+            DatagramSocket socket = new DatagramSocket();
+
+            Instrumentation.Udp.Log.OpeningConnection(remoteUri.ToString());
+
+            try
+            {
+                await socket.ConnectAsync(new HostName(remoteUri.Host), remoteUri.Port.ToString()).AsTask(cancellationToken);
+
+                Instrumentation.Udp.Log.ConnectionOpened(remoteUri.ToString());
                 
                 CoreReader dataReader = new CoreReader(new DatagramSocketInputStream(socket));
                 CoreWriter dataWriter = new CoreWriter(socket.OutputStream);
@@ -44,27 +73,41 @@ namespace OneCog.Net
             }
             catch (Exception e)
             {
-                Instrumentation.Tcp.Log.ConnectionFailed(uri.ToString(), e.ToString());
+                Instrumentation.Udp.Log.ConnectionFailed(remoteUri.ToString(), e.ToString());
 
                 throw;
             }
         }
 
-        public Task ConnectAsync(Uri uri)
+        public Task ConnectAsync(Uri remoteUri)
         {
-            return ConnectAsync(uri, CancellationToken.None);
+            return ConnectAsync(remoteUri, CancellationToken.None);
         }
 
-        public Task ConnectAsync(string host, uint port, CancellationToken cancellationToken)
+        public Task ConnectAsync(string remoteHost, uint remotePort, CancellationToken cancellationToken)
         {
-            Uri uri = new UriBuilder("tcp", host, (int)port).Uri;
-            return ConnectAsync(uri, cancellationToken);
+            Uri remoteUri = new UriBuilder("udp", remoteHost, (int)remotePort).Uri;
+            return ConnectAsync(remoteUri, cancellationToken);
         }
 
-        public Task ConnectAsync(string host, uint port)
+        public Task ConnectAsync(string remoteHost, uint remotePort)
         {
-            Uri uri = new UriBuilder("tcp", host, (int)port).Uri;
-            return ConnectAsync(uri, CancellationToken.None);
+            Uri remoteUri = new UriBuilder("udp", remoteHost, (int)remotePort).Uri;
+            return ConnectAsync(remoteUri, CancellationToken.None);
+        }
+
+        public Task ConnectAsync(string localHost, uint localPort, string remoteHost, uint remotePort, CancellationToken cancellationToken)
+        {
+            Uri localUri = new UriBuilder("udp", localHost, (int)localPort).Uri;
+            Uri remoteUri = new UriBuilder("udp", remoteHost, (int)remotePort).Uri;
+            return ConnectAsync(localUri, remoteUri, cancellationToken);
+        }
+
+        public Task ConnectAsync(string localHost, uint localPort, string remoteHost, uint remotePort)
+        {
+            Uri localUri = new UriBuilder("udp", localHost, (int)localPort).Uri;
+            Uri remoteUri = new UriBuilder("udp", remoteHost, (int)remotePort).Uri;
+            return ConnectAsync(localUri, remoteUri, CancellationToken.None);
         }
 
         public Task<int> ReadAsync(byte[] bytes, CancellationToken cancellationToken)
